@@ -47,8 +47,6 @@ get_ia_choropleth <- function(dta, fill_var, upper_limit = NA) {
 #' @return ggplot2 figure object
 get_ia_bubble_map <- function(dta, color_var, size_var, upper_limit = NA) {
 
-  print(dplyr::glimpse(dta))
-
   ia_counties <- tigris::counties(state = "IA", cb = TRUE, year = 2021)
   dta_cartogram <- sf::st_centroid(dta)
 

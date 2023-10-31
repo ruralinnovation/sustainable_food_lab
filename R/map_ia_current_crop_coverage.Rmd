@@ -171,11 +171,10 @@ for (col_name in pct_cols) {
     stringr::str_replace_all("_", " ")
   
   # Get bubble map
-  print(acre_var_dict[[col_name]])
   fig <- get_ia_bubble_map(dta_sf, col_name, acre_var_dict[[col_name]]) +
     labs(
       title = chart_title,
-      subtitle = "Share of total harvested cropland, excluding harvested alfalfa acreage. Circles size by total acreage.",
+      subtitle = "Share of total harvested cropland, excluding harvested alfalfa acreage. Circles sized by total acreage.",
       x = NULL,
       y = NULL,
       caption = "Source: 2017 Census of Agriculture"

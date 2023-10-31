@@ -25,6 +25,8 @@ showtext_opts(dpi = 300)
 
 here::i_am("R/map_ia_cover_crop_use.Rmd")
 
+source(here::here("R/utils.R"))
+
 ```
 
 
@@ -73,7 +75,7 @@ dta <- dta_ia %>%
   )
 
 # Export data
-readr::write_csv(dta, here::here("data/ia_cover_crop_calculations.csv"))
+# readr::write_csv(dta, here::here("data/ia_cover_crop_calculations.csv"))
 
 ```
 
@@ -93,31 +95,41 @@ dta_sf <- left_join(
 
 ```{r}
 
-fig <- dta_sf %>%
-  ggplot() +
-  geom_sf(aes(fill = pct_cover_crop), color = "black") +
-  scale_fill_gradient2(
-    low = "#F2FBEC", 
-    mid = "#65ACA5",
-    midpoint = .06,
-    high = "#061E46",
-    limits = c(0, NA),
-    labels = scales::percent_format(scale = 100, accuracy = 1),
-    n.breaks = 6
-  ) +
+# fig <- dta_sf %>%
+#   ggplot() +
+#   geom_sf(aes(fill = pct_cover_crop), color = "black") +
+#   scale_fill_gradient2(
+#     low = "#F2FBEC", 
+#     mid = "#65ACA5",
+#     midpoint = .06,
+#     high = "#061E46",
+#     limits = c(0, NA),
+#     labels = scales::percent_format(scale = 100, accuracy = 1),
+#     n.breaks = 6
+#   ) +
+#   labs(
+#     title = "Percent cover crop",
+#     subtitle = "Share of harvested cropland acres",
+#     x = NULL,
+#     y = NULL,
+#     caption = "Source: 2017 Census of Agriculture"
+#   ) +
+#   theme_cori_map() +
+#   theme(
+#     legend.key.width = unit(50, "pt")
+#   )
+
+fig <- get_ia_choropleth(dta_sf, "pct_cover_crop") +
   labs(
-    title = "Percent cover crop",
-    subtitle = "Share of harvested cropland acres",
+    title = "Percent cover crops",
+    subtitle = "Share of total harvested cropland, excluding harvested alfalfa acreage",
     x = NULL,
     y = NULL,
     caption = "Source: 2017 Census of Agriculture"
-  ) +
-  theme_cori_map() +
-  theme(
-    legend.key.width = unit(50, "pt")
   )
 
-save_plot(fig, here::here("export/ia_cover_crop_pct.png"), chart_height = 7.5)
+file_path <- paste0("export/ia_cover_crops.png")
+save_plot(fig, here::here(file_path), chart_height = 7.5)
 
 ```
 
@@ -128,44 +140,54 @@ save_plot(fig, here::here("export/ia_cover_crop_pct.png"), chart_height = 7.5)
 #   sf::st_transform(crs = 3857) %>%
 #   cartogram_dorling(weight = "cover_crop_acres_planted", k = 1)
 
-dta_cartogram <- sf::st_centroid(dta_sf)
+# dta_cartogram <- sf::st_centroid(dta_sf)
+# 
+# fig <- dta_cartogram %>%
+#   ggplot() +
+#   geom_sf(data = ia_counties, fill = NA, linewidth = 0.5, color = "#d0d2ce") +
+#   geom_sf(aes(color = pct_cover_crop, size = cover_crop_acres_planted)) +
+#   scale_size_continuous(
+#     range = c(0, 9),
+#     labels = scales::number_format(scale_cut = scales::cut_short_scale())
+#   ) +
+#   scale_color_gradient2(
+#     low = "#F2FBEC", 
+#     mid = "#65ACA5",
+#     midpoint = .06,
+#     high = "#061E46",
+#     limits = c(0, NA),
+#     labels = scales::percent_format(scale = 100, accuracy = 1),
+#     n.breaks = 6
+#   ) +
+#   labs(
+#     title = "Percent cover crop",
+#     subtitle = "Share of harvested cropland acres, circles sized by cover crop acreage",
+#     x = NULL,
+#     y = NULL,
+#     caption = "Source: 2017 Census of Agriculture"
+#   ) +
+#   theme_cori_map() +
+#   theme(
+#     legend.box = "vertical",
+#     legend.key.width = unit(40, "pt")
+#   ) +
+#   guides(
+#     size = guide_legend(
+#       keywidth = unit(10, "pt")
+#     )
+#   )
 
-fig <- dta_cartogram %>%
-  ggplot() +
-  geom_sf(data = ia_counties, fill = NA, linewidth = 0.5, color = "#d0d2ce") +
-  geom_sf(aes(color = pct_cover_crop, size = cover_crop_acres_planted)) +
-  scale_size_continuous(
-    range = c(0, 9),
-    labels = scales::number_format(scale_cut = scales::cut_short_scale())
-  ) +
-  scale_color_gradient2(
-    low = "#F2FBEC", 
-    mid = "#65ACA5",
-    midpoint = .06,
-    high = "#061E46",
-    limits = c(0, NA),
-    labels = scales::percent_format(scale = 100, accuracy = 1),
-    n.breaks = 6
-  ) +
+fig <- get_ia_bubble_map(dta_sf, "pct_cover_crop", "cover_crop_acres_planted") +
   labs(
-    title = "Percent cover crop",
-    subtitle = "Share of harvested cropland acres, circles sized by cover crop acreage",
+    title = "Percent cover crops",
+    subtitle = "Share of total harvested cropland, excluding harvested alfalfa acreage. Circles sized by total acreage.",
     x = NULL,
     y = NULL,
     caption = "Source: 2017 Census of Agriculture"
-  ) +
-  theme_cori_map() +
-  theme(
-    legend.box = "vertical",
-    legend.key.width = unit(40, "pt")
-  ) +
-  guides(
-    size = guide_legend(
-      keywidth = unit(10, "pt")
-    )
   )
 
-save_plot(fig, here::here("export/ia_cover_crop_pct_dorling.png"), chart_height = 8)
+file_path <- paste0("export/ia_bubble_cover_crop.png")
+save_plot(fig, here::here(file_path), chart_height = 7.5)
 
 ```
 

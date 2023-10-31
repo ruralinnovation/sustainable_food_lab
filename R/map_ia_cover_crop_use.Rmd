@@ -72,6 +72,9 @@ dta <- dta_ia %>%
     geoid_co = paste0(STATE_FIPS_CODE, COUNTY_CODE)
   )
 
+# Export data
+readr::write_csv(dta, here::here("data/ia_cover_crop_calculations.csv"))
+
 ```
 
 ```{r}
@@ -165,3 +168,4 @@ fig <- dta_cartogram %>%
 save_plot(fig, here::here("export/ia_cover_crop_pct_dorling.png"), chart_height = 8)
 
 ```
+

@@ -25,6 +25,8 @@ showtext_opts(dpi = 300)
 
 here::i_am("R/map_ia_current_crop_coverage.Rmd")
 
+source(here::here("R/utils.R"))
+
 ```
 
 ```{r}
@@ -90,14 +92,99 @@ dta <- dta_ia %>%
     )
   ) %>%
   mutate(
+    # Denominator calculations
     haylage_alfalfa_acres_harvested = tidyr::replace_na(haylage_alfalfa_acres_harvested, 0),
     viable_cropland = cropland_acres_harvested - hay_alfalfa_acres_harvested - haylage_alfalfa_acres_harvested,
+    # Calculate crop coverage
     pct_corn_grain = corn_grain_acres_harvested / viable_cropland,
     pct_soybeans_acres = soybeans_acres_harvested / viable_cropland,
     pct_oats_acres = oats_acres_harvested / viable_cropland,
     pct_rye_acres = rye_acres_harvested / viable_cropland,
-    pct_wheat_acres = wheat_acres_harvested / viable_cropland
+    pct_wheat_acres = wheat_acres_harvested / viable_cropland,
+    # GEOID
+    geoid_co = paste0(STATE_FIPS_CODE, COUNTY_CODE)
   )
+
+# Export data
+# readr::write_csv(dta, here::here("data/ia_current_crop_calculations.csv"))
+
+```
+```{r}
+
+# get Iowa geometries
+ia_counties <- tigris::counties(state = "IA", cb = TRUE, year = 2021)
+  
+dta_sf <- left_join(
+    dta,
+    ia_counties,
+    by = c("geoid_co" = "GEOID")
+  ) %>%
+  sf::st_as_sf()
+
+```
+
+```{r}
+
+source(here::here("R/utils.R"))
+
+pct_cols <- dta_sf %>%
+  select(tidyr::starts_with("pct_")) %>%
+  sf::st_drop_geometry() %>%
+  colnames() %>%
+  unique()
+
+for (col_name in pct_cols) {
+  
+  chart_title <- stringr::str_replace(col_name, "pct", "Percent") %>%
+    stringr::str_replace_all("_", " ")
+  
+  fig <- get_ia_choropleth(dta_sf, col_name) +
+    labs(
+      title = chart_title,
+      subtitle = "Share of total harvested cropland, excluding harvested alfalfa acreage",
+      x = NULL,
+      y = NULL,
+      caption = "Source: 2017 Census of Agriculture"
+    )
+  
+  file_path <- paste0("export/ia_", col_name, ".png")
+  save_plot(fig, here::here(file_path), chart_height = 7.5)
+  
+}
+
+
+```
+
+```{r}
+
+acre_var_dict <- list(
+  pct_corn_grain = "corn_grain_acres_harvested",
+  pct_soybeans_acres = "soybeans_acres_harvested",
+  pct_oats_acres = "oats_acres_harvested",
+  pct_rye_acres = "rye_acres_harvested",
+  pct_wheat_acres = "wheat_acres_harvested"  
+)
+
+for (col_name in pct_cols) {
+  
+  chart_title <- stringr::str_replace(col_name, "pct", "Percent") %>%
+    stringr::str_replace_all("_", " ")
+  
+  # Get bubble map
+  print(acre_var_dict[[col_name]])
+  fig <- get_ia_bubble_map(dta_sf, col_name, acre_var_dict[[col_name]]) +
+    labs(
+      title = chart_title,
+      subtitle = "Share of total harvested cropland, excluding harvested alfalfa acreage. Circles size by total acreage.",
+      x = NULL,
+      y = NULL,
+      caption = "Source: 2017 Census of Agriculture"
+    )
+  
+  file_path <- paste0("export/ia_bubble_", col_name, ".png")
+  save_plot(fig, here::here(file_path), chart_height = 7.5)
+  
+}
 
 ```
 

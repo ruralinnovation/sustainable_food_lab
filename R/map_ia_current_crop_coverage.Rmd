@@ -181,7 +181,7 @@ for (col_name in pct_cols) {
     )
   
   file_path <- paste0("export/ia_bubble_", col_name, ".png")
-  save_plot(fig, here::here(file_path), chart_height = 7.5)
+  save_plot(fig, here::here(file_path), chart_height = 8)
   
 }
 

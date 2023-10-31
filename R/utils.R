@@ -83,6 +83,7 @@ get_ia_bubble_map <- function(dta, color_var, size_var, upper_limit = NA) {
     ) +
     guides(
       size = guide_legend(
+        order = 1,
         keywidth = unit(10, "pt")
       )
     )

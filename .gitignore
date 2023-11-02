@@ -6,5 +6,7 @@
 .DS_Store
 
 /export/*.png
+/export/*.zip
 /data/*.txt
 /data/*.csv
+/data/*.zip

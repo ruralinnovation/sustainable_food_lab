@@ -16,5 +16,7 @@ hog_info:
   lbs_per_rye_bushel: 56
   rye_bushels_per_acre: 98
   rye_lb_increase_per_hog: 201.6
+converted_cropland:
+  pct_converted_to_oats: .02
 ratios:
   planted_acres_from_1_acre_rye_seed: 50

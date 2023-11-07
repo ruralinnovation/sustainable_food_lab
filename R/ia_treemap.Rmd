@@ -1,0 +1,132 @@
+---
+title: "ia_treemap"
+output: html_document
+---
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(cori.charts)
+library(cartogram)
+library(sysfonts)
+library(showtext)
+library(treemapify)
+
+sysfonts::font_add_google("Lato")
+font_add(
+  "TT Hoves",
+  regular = "TypeType - TT Hoves Regular.ttf",
+  bold = "TypeType - TT Hoves Bold.ttf",
+  italic = "TypeType - TT Hoves Italic.ttf",
+  bolditalic = "TypeType - TT Hoves Bold Italic.ttf"
+)
+showtext_auto()
+showtext_opts(dpi = 300)
+
+here::i_am("R/ia_treemap.Rmd")
+
+source(here::here("R/utils.R"))
+
+```
+
+
+```{r}
+
+dta <- readr::read_csv(here::here("data/ia_crop_calculations.csv"))
+
+```
+
+```{r}
+
+# aggregate up to state level
+dta_ia <- dta %>%
+  group_by(STATE_NAME) %>%
+  summarise(
+    cropland_acres_harvested = sum(cropland_acres_harvested, na.rm = T),
+    corn_grain_acres_harvested = sum(corn_grain_acres_harvested, na.rm = T),
+    wheat_acres_harvested = sum(wheat_acres_harvested, na.rm = T),
+    oats_acres_harvested = sum(oats_acres_harvested, na.rm = T),
+    soybeans_acres_harvested = sum(soybeans_acres_harvested, na.rm = T),
+    rye_acres_harvested = sum(rye_acres_harvested, na.rm = T),
+    hay_alfalfa_acres_harvested = sum(hay_alfalfa_acres_harvested, na.rm = T),
+    haylage_alfalfa_acres_harvested = sum(haylage_alfalfa_acres_harvested, na.rm = T),
+    cover_crop_acres_planted = sum(cover_crop_acres_planted, na.rm = T),
+    viable_cropland = sum(viable_cropland, na.rm = T)
+  ) %>%
+  mutate(
+    focus_crop_total = corn_grain_acres_harvested + wheat_acres_harvested + oats_acres_harvested + soybeans_acres_harvested + rye_acres_harvested,
+    all_other = viable_cropland - focus_crop_total,
+    small_grains = wheat_acres_harvested + oats_acres_harvested + rye_acres_harvested,
+  ) %>%
+  tidyr::pivot_longer(!STATE_NAME) %>%
+  filter(
+    name %in% c(
+      "corn_grain_acres_harvested",
+      "small_grains",
+      "soybeans_acres_harvested",
+      "cover_crop_acres_planted",
+      "all_other"
+    )
+  ) %>%
+  mutate(
+    name = case_match(name, 
+    "corn_grain_acres_harvested" ~ "Corn, grain",
+    "small_grains" ~ "Small grains",
+    "soybeans_acres_harvested" ~ "Soybeans",
+    "cover_crop_acres_planted" ~ "Cover crops",
+    "all_other" ~ "Other harvested cropland"
+    ),
+    label = paste0(
+      name,
+      "\n(",
+      scales::number(value, accuracy = 1, scale_cut = scales::cut_short_scale()),
+      " acres)"
+    )
+  )
+
+dta_ia$name <- factor(
+  dta_ia$name,
+  levels = c(
+    "Corn, grain",
+    "Soybeans",
+    "Cover crops",
+    "Small grains",
+    "Other harvested cropland"
+  )
+)
+
+```
+
+```{r}
+
+fill_scale <- c(
+  "Corn, grain" = "#7B3F00",
+  "Soybeans" = "#B87333",
+  "Small grains" = "#A3E2B5",
+  "Cover crops" = "#6B9C85",
+  "Other harvested cropland" = "dimgray"
+)
+
+fig <- ggplot(dta_ia, aes(area = value, fill = name, label = `label`)) +
+  geom_treemap() +
+  geom_treemap_text(
+    colour = "white",
+    place = "centre",
+    size = 15,
+    # grow = TRUE,
+    family = "Lato"
+  ) +
+  scale_fill_manual(values = fill_scale) +
+  theme_cori() +
+  labs(
+    title = "Iowa crop coverage",
+    subtitle = "Squares sized according to harvested or planted acres",
+    x = NULL,
+    y = NULL,
+    caption = "Source: 2017 Census of Agriculture"
+  )
+
+save_plot(fig, here::here("export/ia_curr_crop_treemap.png"))
+
+```

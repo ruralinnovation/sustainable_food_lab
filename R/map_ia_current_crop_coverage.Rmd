@@ -31,6 +31,7 @@ source(here::here("R/utils.R"))
 
 ```{r}
 
+params <- yaml::read_yaml(here::here("params.yml"))
 dta_ia <- readr::read_csv(here::here("data/2017_agcensus_ia_co.csv"))
 
 ```
@@ -47,7 +48,9 @@ crop_desc <- c(
   "SOYBEANS - ACRES HARVESTED",
   "OATS - ACRES HARVESTED",
   "RYE - ACRES HARVESTED",
-  "WHEAT - ACRES HARVESTED"
+  "WHEAT - ACRES HARVESTED",
+  # Hog info
+  "HOGS - INVENTORY"
 )
 
 dta <- dta_ia %>%
@@ -66,7 +69,8 @@ dta <- dta_ia %>%
       "SOYBEANS - ACRES HARVESTED" ~ "soybeans_acres_harvested",
       "OATS - ACRES HARVESTED" ~ "oats_acres_harvested",
       "RYE - ACRES HARVESTED" ~ "rye_acres_harvested",
-      "WHEAT - ACRES HARVESTED" ~ "wheat_acres_harvested"
+      "WHEAT - ACRES HARVESTED" ~ "wheat_acres_harvested",
+      "HOGS - INVENTORY" ~ "hog_head"
     ),
     VALUE = ifelse(
       is.na(as.numeric(gsub(",", "", VALUE))), 
@@ -88,7 +92,8 @@ dta <- dta_ia %>%
       soybeans_acres_harvested = 0,
       oats_acres_harvested = 0,
       rye_acres_harvested = 0,
-      wheat_acres_harvested = 0
+      wheat_acres_harvested = 0,
+      hog_head = 0
     )
   ) %>%
   mutate(
@@ -101,14 +106,25 @@ dta <- dta_ia %>%
     pct_oats_acres = oats_acres_harvested / viable_cropland,
     pct_rye_acres = rye_acres_harvested / viable_cropland,
     pct_wheat_acres = wheat_acres_harvested / viable_cropland,
+    # Hog calculations
+    total_hog_head = sum(hog_head, na.rm = TRUE),
+    pct_hog_head = hog_head / total_hog_head,
     # GEOID
-    geoid_co = paste0(STATE_FIPS_CODE, COUNTY_CODE)
+    geoid_co = paste0(STATE_FIPS_CODE, COUNTY_CODE),
+    # GHG emissions,
+    co2_corn_grain = corn_grain_acres_harvested * params$co2_per_acre$corn_grain,
+    co2_soybeans = soybeans_acres_harvested * params$co2_per_acre$soybeans,
+    co2_oats = oats_acres_harvested * params$co2_per_acre$oats,
+    co2_rye = ((rye_acres_harvested/2) * params$co2_per_acre$rye_feed) + ((rye_acres_harvested/2) * params$co2_per_acre$rye_seed),
+    co2_wheat = wheat_acres_harvested * params$co2_per_acre$wheat
   )
 
 # Export data
-# readr::write_csv(dta, here::here("data/ia_current_crop_calculations.csv"))
+readr::write_csv(dta, here::here("data/ia_current_crop_calculations.csv"))
 
 ```
+
+
 ```{r}
 
 # get Iowa geometries

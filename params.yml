@@ -1,0 +1,20 @@
+co2_per_acre:
+  corn_grain: 2454.93
+  soybeans: 1004.01
+  cover_crops: -1122.75
+  rye_seed: 1485.6
+  rye_feed: 1879
+  wheat: 2044.33
+  oats: 1304.14
+  low_carbon_corn: 1890.30
+nitrate_reduction:
+  rye: .31
+  oats: .3
+  low_carbon_corn: .149
+hog_info:
+  number_of_hogs: 58500000
+  lbs_per_rye_bushel: 56
+  rye_bushels_per_acre: 98
+  rye_lb_increase_per_hog: 201.6
+ratios:
+  planted_acres_from_1_acre_rye_seed: 50

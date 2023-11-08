@@ -26,31 +26,33 @@ showtext_opts(dpi = 300)
 here::i_am("R/map_ia_current_crop_coverage.Rmd")
 
 source(here::here("R/utils.R"))
+source(here::here("R/get_current_crop_data.R"))
 
 ```
 
-```{r}
+```{r, eval=FALSE}
 
 params <- yaml::read_yaml(here::here("params.yml"))
 dta_ia <- readr::read_csv(here::here("data/2017_agcensus_ia_co.csv"))
 
 ```
 
-```{r}
+```{r, eval=FALSE}
 
 crop_desc <- c(
   # Harvest cropland variables
   "AG LAND, CROPLAND, HARVESTED - ACRES",
   "HAY, ALFALFA - ACRES HARVESTED",
   "HAYLAGE, ALFALFA - ACRES HARVESTED",
-  # corn, soy, and small grains (oats, rye, wheat)
+  # corn, soy, and small grains (oats, rye)
   "CORN, GRAIN - ACRES HARVESTED",
   "SOYBEANS - ACRES HARVESTED",
   "OATS - ACRES HARVESTED",
   "RYE - ACRES HARVESTED",
-  "WHEAT - ACRES HARVESTED",
   # Hog info
-  "HOGS - INVENTORY"
+  "HOGS - INVENTORY",
+  # Cover crops
+  "PRACTICES, LAND USE, CROPLAND, COVER CROP PLANTED, (EXCL CRP) - ACRES"
 )
 
 dta <- dta_ia %>%
@@ -69,8 +71,8 @@ dta <- dta_ia %>%
       "SOYBEANS - ACRES HARVESTED" ~ "soybeans_acres_harvested",
       "OATS - ACRES HARVESTED" ~ "oats_acres_harvested",
       "RYE - ACRES HARVESTED" ~ "rye_acres_harvested",
-      "WHEAT - ACRES HARVESTED" ~ "wheat_acres_harvested",
-      "HOGS - INVENTORY" ~ "hog_head"
+      "HOGS - INVENTORY" ~ "hog_head",
+      "PRACTICES, LAND USE, CROPLAND, COVER CROP PLANTED, (EXCL CRP) - ACRES" ~ "cover_crop_acres_planted"
     ),
     VALUE = ifelse(
       is.na(as.numeric(gsub(",", "", VALUE))), 
@@ -92,7 +94,7 @@ dta <- dta_ia %>%
       soybeans_acres_harvested = 0,
       oats_acres_harvested = 0,
       rye_acres_harvested = 0,
-      wheat_acres_harvested = 0,
+      cover_crop_acres_planted = 0,
       hog_head = 0
     )
   ) %>%
@@ -105,7 +107,7 @@ dta <- dta_ia %>%
     pct_soybeans_acres = soybeans_acres_harvested / viable_cropland,
     pct_oats_acres = oats_acres_harvested / viable_cropland,
     pct_rye_acres = rye_acres_harvested / viable_cropland,
-    pct_wheat_acres = wheat_acres_harvested / viable_cropland,
+    pct_cover_crop_acres = cover_crop_acres_planted / viable_cropland,
     # Hog calculations
     total_hog_head = sum(hog_head, na.rm = TRUE),
     pct_hog_head = hog_head / total_hog_head,
@@ -113,19 +115,23 @@ dta <- dta_ia %>%
     geoid_co = paste0(STATE_FIPS_CODE, COUNTY_CODE),
     # GHG emissions,
     co2_corn_grain = corn_grain_acres_harvested * params$co2_per_acre$corn_grain,
+    co2_lcc = 0 * params$co2_per_acre$low_carbon_corn, # Assume no LCC to start
     co2_soybeans = soybeans_acres_harvested * params$co2_per_acre$soybeans,
+    co2_cover_crops = cover_crop_acres_planted * params$co2_per_acre$cover_crops,
     co2_oats = oats_acres_harvested * params$co2_per_acre$oats,
     co2_rye = ((rye_acres_harvested/2) * params$co2_per_acre$rye_feed) + ((rye_acres_harvested/2) * params$co2_per_acre$rye_seed),
-    co2_wheat = wheat_acres_harvested * params$co2_per_acre$wheat
+    co2_total = co2_corn + co2_lcc + co2_soybeans + co2_cover_crops + co2_rye + co2_oats
   )
 
 # Export data
-readr::write_csv(dta, here::here("data/ia_current_crop_calculations.csv"))
+# readr::write_csv(dta, here::here("data/ia_current_crop_calculations.csv"))
 
 ```
 
 
 ```{r}
+
+dta <- get_current_crop_data()
 
 # get Iowa geometries
 ia_counties <- tigris::counties(state = "IA", cb = TRUE, year = 2021)
@@ -140,8 +146,6 @@ dta_sf <- left_join(
 ```
 
 ```{r}
-
-source(here::here("R/utils.R"))
 
 pct_cols <- dta_sf %>%
   select(tidyr::starts_with("pct_")) %>%
@@ -177,8 +181,7 @@ acre_var_dict <- list(
   pct_corn_grain = "corn_grain_acres_harvested",
   pct_soybeans_acres = "soybeans_acres_harvested",
   pct_oats_acres = "oats_acres_harvested",
-  pct_rye_acres = "rye_acres_harvested",
-  pct_wheat_acres = "wheat_acres_harvested"  
+  pct_rye_acres = "rye_acres_harvested"
 )
 
 for (col_name in pct_cols) {

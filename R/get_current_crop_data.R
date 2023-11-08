@@ -63,7 +63,7 @@ get_current_crop_data <- function() {
       haylage_alfalfa_acres_harvested = tidyr::replace_na(haylage_alfalfa_acres_harvested, 0),
       viable_cropland = cropland_acres_harvested - hay_alfalfa_acres_harvested - haylage_alfalfa_acres_harvested,
       # Calculate crop coverage
-      pct_corn_grain = corn_grain_acres_harvested / viable_cropland,
+      pct_corn_grain_acres = corn_grain_acres_harvested / viable_cropland,
       pct_soybeans_acres = soybeans_acres_harvested / viable_cropland,
       pct_oats_acres = oats_acres_harvested / viable_cropland,
       pct_rye_acres = rye_acres_harvested / viable_cropland,

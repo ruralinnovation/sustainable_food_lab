@@ -15,6 +15,7 @@ get_scenario_a_data <- function() {
       #
       cc_on_soybean_acres = soybeans_acres_harvested,
       new_rye_acres_for_seed = cc_on_soybean_acres / params$ratios$planted_acres_from_1_acre_rye_seed,
+      new_acres_of_n_fixing_legume_cover_crop = new_rye_acres_for_seed,
       new_acres_lcc = new_rye_acres_for_seed,
       corn_acres_displaced_by_rye_for_seed = new_rye_acres_for_seed,
       #
@@ -30,7 +31,7 @@ get_scenario_a_data <- function() {
       #
       corn_grain_acres_harvested = corn_grain_acres_harvested - corn_acres_displaced_by_rye_for_seed - new_acres_lcc,
       rye_acres_harvested = rye_acres_harvested + new_rye_acres_for_seed,
-      cover_crop_acres_planted = cover_crop_acres_planted + cc_on_soybean_acres,
+      cover_crop_acres_planted = cover_crop_acres_planted + cc_on_soybean_acres + new_acres_of_n_fixing_legume_cover_crop,
       #
       # Calculate outcomes
       #

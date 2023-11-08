@@ -31,9 +31,17 @@ dta_calc_ia <- dta_calc %>%
   group_by(STATE_NAME) %>%
   summarise(
     corn_grain_acres_harvested = sum(corn_grain_acres_harvested, na.rm = T),
+    soybeans_acres_harvested = sum(soybeans_acres_harvested, na.rm = T),
     rye_acres_harvested = sum(rye_acres_harvested, na.rm = T),
+    oats_acres_harvested = sum(oats_acres_harvested, na.rm = T),
     cover_crop_acres_planted = sum(cover_crop_acres_planted, na.rm = T),
+    co2_corn = sum(co2_corn, na.rm = T),
+    co2_soybeans = sum(co2_soybeans, na.rm = T),
+    co2_rye = sum(co2_rye, na.rm = T),
+    co2_oats = sum(co2_oats, na.rm = T),
+    co2_cover_crops = sum(co2_cover_crops),
     co2_total = sum(co2_total, na.rm = T)
-  )
+  ) %>%
+  tidyr::pivot_longer(!STATE_NAME)
 
 ```

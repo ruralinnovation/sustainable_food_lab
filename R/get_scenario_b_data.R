@@ -28,8 +28,18 @@ get_scenario_b_data <- function() {
       co2_change_lcc = new_acres_lcc * (params$co2_per_acre$low_carbon_corn - params$co2_per_acre$corn_grain),
       co2_net = co2_change_hybrid_rye + co2_change_lcc,
       # Calculate outcomes
-      increase_lcc_acres = new_acres_lcc,
+      lcc_acres_harvested = new_acres_lcc,
       extra_acres_covered_per_year = new_acres_hybrid_rye,
+      #
+      # Calculate new Carbon Total
+      #
+      co2_corn = corn_grain_acres_harvested * params$co2_per_acre$corn_grain,
+      co2_lcc = lcc_acres_harvested * params$co2_per_acre$low_carbon_corn,
+      co2_soybeans = soybeans_acres_harvested * params$co2_per_acre$soybeans,
+      co2_cover_crops = cover_crop_acres_planted * params$co2_per_acre$cover_crops,
+      co2_rye = rye_acres_harvested * params$co2_per_acre$rye_seed,
+      co2_oats = oats_acres_harvested * params$co2_per_acre$oats,
+      co2_total = co2_corn + co2_lcc + co2_soybeans + co2_cover_crops + co2_rye + co2_oats
     )
 
   return(dta_calc)

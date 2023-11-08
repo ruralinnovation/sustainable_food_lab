@@ -1,5 +1,5 @@
 ---
-title: "scenario_a_calculations"
+title: "baseline_calculations"
 output: html_document
 ---
 
@@ -10,9 +10,9 @@ library(ggplot2)
 library(cori.charts)
 library(yaml)
 
-here::i_am("R/scenario_a_calculations.Rmd")
+here::i_am("R/baseline_calculations.Rmd")
 source(here::here("R/utils.R"))
-source(here::here("R/get_scenario_a_data.R"))
+source(here::here("R/get_current_crop_data.R"))
 
 ```
 
@@ -20,12 +20,9 @@ source(here::here("R/get_scenario_a_data.R"))
 ```{r}
 
 params <- yaml::read_yaml(here::here("params.yml"))
-dta_calc <- get_scenario_a_data()
+dta_calc <- get_current_crop_data()
 
 ```
-
-
-Scenario A: Introduce 1 acre of fall cover crop for every acre of harvested soybeans
 
 
 ```{r}
@@ -36,14 +33,7 @@ dta_calc_ia <- dta_calc %>%
     corn_grain_acres_harvested = sum(corn_grain_acres_harvested, na.rm = T),
     rye_acres_harvested = sum(rye_acres_harvested, na.rm = T),
     cover_crop_acres_planted = sum(cover_crop_acres_planted, na.rm = T),
-    co2_net = sum(co2_net, na.rm = T),
-    lcc_acres_harvested = sum(lcc_acres_harvested, na.rm = T),
-    extra_acres_covered_per_year = sum(extra_acres_covered_per_year, na.rm = T),
     co2_total = sum(co2_total, na.rm = T)
   )
-  
 
 ```
-
-
-

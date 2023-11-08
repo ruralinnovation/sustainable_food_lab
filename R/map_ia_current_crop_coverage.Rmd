@@ -181,10 +181,13 @@ acre_var_dict <- list(
   pct_corn_grain = "corn_grain_acres_harvested",
   pct_soybeans_acres = "soybeans_acres_harvested",
   pct_oats_acres = "oats_acres_harvested",
-  pct_rye_acres = "rye_acres_harvested"
+  pct_rye_acres = "rye_acres_harvested",
+  pct_cover_crop_acres = "cover_crop_acres_planted"
 )
 
 for (col_name in pct_cols) {
+  
+  print(col_name)
   
   chart_title <- stringr::str_replace(col_name, "pct", "Percent") %>%
     stringr::str_replace_all("_", " ")

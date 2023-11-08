@@ -13,8 +13,6 @@ get_current_crop_data <- function() {
     "SOYBEANS - ACRES HARVESTED",
     "OATS - ACRES HARVESTED",
     "RYE - ACRES HARVESTED",
-    # Hog info
-    "HOGS - INVENTORY",
     # Cover crops
     "PRACTICES, LAND USE, CROPLAND, COVER CROP PLANTED, (EXCL CRP) - ACRES"
   )
@@ -35,7 +33,6 @@ get_current_crop_data <- function() {
         "SOYBEANS - ACRES HARVESTED" ~ "soybeans_acres_harvested",
         "OATS - ACRES HARVESTED" ~ "oats_acres_harvested",
         "RYE - ACRES HARVESTED" ~ "rye_acres_harvested",
-        "HOGS - INVENTORY" ~ "hog_head",
         "PRACTICES, LAND USE, CROPLAND, COVER CROP PLANTED, (EXCL CRP) - ACRES" ~ "cover_crop_acres_planted"
       ),
       VALUE = ifelse(
@@ -58,8 +55,7 @@ get_current_crop_data <- function() {
         soybeans_acres_harvested = 0,
         oats_acres_harvested = 0,
         rye_acres_harvested = 0,
-        cover_crop_acres_planted = 0,
-        hog_head = 0
+        cover_crop_acres_planted = 0
       )
     ) |>
     dplyr::mutate(
@@ -72,9 +68,6 @@ get_current_crop_data <- function() {
       pct_oats_acres = oats_acres_harvested / viable_cropland,
       pct_rye_acres = rye_acres_harvested / viable_cropland,
       pct_cover_crop_acres = cover_crop_acres_planted / viable_cropland,
-      # Hog calculations
-      total_hog_head = sum(hog_head, na.rm = TRUE),
-      pct_hog_head = hog_head / total_hog_head,
       # GEOID
       geoid_co = paste0(STATE_FIPS_CODE, COUNTY_CODE),
       # GHG emissions,

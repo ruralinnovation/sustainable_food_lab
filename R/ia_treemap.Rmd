@@ -51,8 +51,8 @@ dta_ia <- aggregate_county_crop_totals_to_state(dta)
 fill_scale <- c(
   "Corn, grain" = "#7B3F00",
   "Soybeans" = "#B87333",
-  "Oats" = "#6B9C85",
-  "Rye" = "#A3E2B5",
+  "Oats" = "#96D2AA",
+  "Rye" = "#6B9C85",
   "Cover crops" = "#00835D",
   "Other harvested cropland" = "dimgray"
 )

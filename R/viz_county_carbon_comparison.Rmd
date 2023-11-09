@@ -1,0 +1,154 @@
+---
+title: "viz_county_carbon_comparison"
+output: html_document
+---
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(cori.charts)
+library(cartogram)
+library(sysfonts)
+library(showtext)
+
+sysfonts::font_add_google("Lato")
+font_add(
+  "TT Hoves",
+  regular = "TypeType - TT Hoves Regular.ttf",
+  bold = "TypeType - TT Hoves Bold.ttf",
+  italic = "TypeType - TT Hoves Italic.ttf",
+  bolditalic = "TypeType - TT Hoves Bold Italic.ttf"
+)
+showtext_auto()
+showtext_opts(dpi = 300)
+
+here::i_am("R/viz_county_carbon_comparison.Rmd")
+source(here::here("R/get_current_crop_data.R"))
+source(here::here("R/get_scenario_a_data.R"))
+source(here::here("R/get_scenario_b_data.R"))
+source(here::here("R/get_scenario_c_data.R"))
+source(here::here("R/utils.R"))
+
+```
+
+```{r}
+
+baseline_description <- "Current baseline for corn grain, soybeans, cover crops, oats, and rye coverage"
+scenario_a_description <- "If one acre of fall cover crop was added for every acre of soybeans"
+scenario_b_description <- "If all Iowa hogs were fed a ration of rye"
+scenario_c_description <- "If 2% of harvested cropland was converted to oats"
+
+dta_baseline <- get_current_crop_data()
+dta_a <- get_scenario_a_data()
+dta_b <- get_scenario_b_data()
+dta_c <- get_scenario_c_data()
+
+dta <- bind_rows(
+  dta_baseline,
+  dta_a,
+  dta_b,
+  dta_c
+)
+
+ia_counties <- tigris::counties(state = "IA", cb = TRUE, year = 2021)
+
+charts_upper_limit <- max(dta$co2_total, na.rm = T)
+
+```
+
+
+```{r}
+
+fig <- 
+  left_join(
+    dta_baseline,
+    ia_counties,
+    by = c("geoid_co" = "GEOID")
+  ) %>%
+  sf::st_as_sf() %>%
+  get_ia_bubble_map(
+    "co2_total", "co2_total", upper_limit = charts_upper_limit, is_color_number = TRUE) +
+    labs(
+      title = "Baseline",
+      subtitle = "CO2 emissions by county for corn grain, soybeans, cover, rye, and oat crops",
+      x = NULL,
+      y = NULL,
+      caption = "Source: 2017 Census of Agriculture"
+    )
+
+save_plot(fig, here::here("export/county_c02_baseline.png"), chart_height = 8)
+
+```
+
+```{r}
+
+fig <- 
+  left_join(
+    dta_a,
+    ia_counties,
+    by = c("geoid_co" = "GEOID")
+  ) %>%
+  sf::st_as_sf() %>%
+  get_ia_bubble_map(
+    "co2_total", "co2_total", upper_limit = charts_upper_limit, is_color_number = TRUE) +
+    labs(
+      title = "Scenario A",
+      subtitle = "CO2 emissions by county for corn grain, soybeans, cover, rye, and oat crops",
+      x = NULL,
+      y = NULL,
+      caption = "Source: 2017 Census of Agriculture"
+    )
+
+save_plot(fig, here::here("export/county_c02_a.png"), chart_height = 8)
+
+```
+
+```{r}
+
+fig <- 
+  left_join(
+    dta_b,
+    ia_counties,
+    by = c("geoid_co" = "GEOID")
+  ) %>%
+  sf::st_as_sf() %>%
+  get_ia_bubble_map(
+    "co2_total", "co2_total", upper_limit = charts_upper_limit, is_color_number = TRUE) +
+    labs(
+      title = "Scenario B",
+      subtitle = "CO2 emissions by county for corn grain, soybeans, cover, rye, and oat crops",
+      x = NULL,
+      y = NULL,
+      caption = "Source: 2017 Census of Agriculture"
+    )
+
+save_plot(fig, here::here("export/county_c02_b.png"), chart_height = 8)
+
+```
+
+```{r}
+
+fig <- 
+  left_join(
+    dta_c,
+    ia_counties,
+    by = c("geoid_co" = "GEOID")
+  ) %>%
+  sf::st_as_sf() %>%
+  get_ia_bubble_map(
+    "co2_total", "co2_total", upper_limit = charts_upper_limit, is_color_number = TRUE) +
+    labs(
+      title = "Scenario C",
+      subtitle = "CO2 emissions by county for corn grain, soybeans, cover, rye, and oat crops",
+      x = NULL,
+      y = NULL,
+      caption = "Source: 2017 Census of Agriculture"
+    )
+
+save_plot(fig, here::here("export/county_c02_c.png"), chart_height = 8)
+
+```
+
+
+

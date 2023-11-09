@@ -1,0 +1,282 @@
+---
+title: "viz_ia_crop_totals"
+output: html_document
+---
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(cori.charts)
+library(cartogram)
+library(sysfonts)
+library(showtext)
+library(treemapify)
+
+sysfonts::font_add_google("Lato")
+font_add(
+  "TT Hoves",
+  regular = "TypeType - TT Hoves Regular.ttf",
+  bold = "TypeType - TT Hoves Bold.ttf",
+  italic = "TypeType - TT Hoves Italic.ttf",
+  bolditalic = "TypeType - TT Hoves Bold Italic.ttf"
+)
+showtext_auto()
+showtext_opts(dpi = 300)
+
+here::i_am("R/viz_ia_crop_totals.Rmd")
+
+source(here::here("R/utils.R"))
+source(here::here("R/get_scenario_a_data.R"))
+source(here::here("R/get_scenario_b_data.R"))
+source(here::here("R/get_scenario_c_data.R"))
+source(here::here("R/get_current_crop_data.R"))
+
+```
+
+
+```{r}
+
+crop_variables <- c(
+  "corn_grain_acres_harvested",
+  "soybeans_acres_harvested",
+  "rye_acres_harvested",
+  "oats_acres_harvested",
+  "cover_crop_acres_planted"
+)
+
+name_order <- rev(c(
+  "Corn, grain",
+  "Soybeans",
+  # "Cover crops",
+  "Rye",
+  "Oats"
+))
+
+dta_baseline <- get_current_crop_data() %>% summarize_county_data() %>%
+  filter(name %in% crop_variables) %>%
+  mutate(
+    name = case_match(name,
+      "corn_grain_acres_harvested" ~ "Corn, grain",
+      "soybeans_acres_harvested" ~ "Soybeans",
+      "cover_crop_acres_planted" ~ "Cover crops",
+      "rye_acres_harvested" ~ "Rye",
+      "oats_acres_harvested" ~ "Oats"
+    )
+  )
+
+dta_baseline$name <- factor(dta_baseline$name, levels = name_order)
+
+dta_a <- get_scenario_a_data() %>% summarize_county_data() %>%
+    filter(name %in% crop_variables) %>%
+  mutate(
+    name = case_match(name,
+      "corn_grain_acres_harvested" ~ "Corn, grain",
+      "soybeans_acres_harvested" ~ "Soybeans",
+      "cover_crop_acres_planted" ~ "Cover crops",
+      "rye_acres_harvested" ~ "Rye",
+      "oats_acres_harvested" ~ "Oats"
+    )
+  )
+
+dta_a$name <- factor(dta_a$name, levels = name_order)
+
+dta_b <- get_scenario_b_data() %>% summarize_county_data() %>%
+    filter(name %in% crop_variables) %>%
+  mutate(
+    name = case_match(name,
+      "corn_grain_acres_harvested" ~ "Corn, grain",
+      "soybeans_acres_harvested" ~ "Soybeans",
+      "cover_crop_acres_planted" ~ "Cover crops",
+      "rye_acres_harvested" ~ "Rye",
+      "oats_acres_harvested" ~ "Oats"
+    )
+  )
+
+dta_b$name <- factor(dta_b$name, levels = name_order)
+
+dta_c <- get_scenario_c_data() %>% summarize_county_data() %>%
+    filter(name %in% crop_variables) %>%
+  mutate(
+    name = case_match(name,
+      "corn_grain_acres_harvested" ~ "Corn, grain",
+      "soybeans_acres_harvested" ~ "Soybeans",
+      "cover_crop_acres_planted" ~ "Cover crops",
+      "rye_acres_harvested" ~ "Rye",
+      "oats_acres_harvested" ~ "Oats"
+    )
+  )
+
+dta_c$name <- factor(dta_c$name, levels = name_order)
+
+params <- yaml::read_yaml(here::here("params.yml"))
+
+```
+
+
+```{r}
+
+fig <- dta_baseline %>%
+  ggplot2::ggplot(
+    aes(
+      value, name
+    )
+  ) +
+  ggplot2::geom_col(fill = params$graphics$default_color) +
+  geom_text(
+    aes(
+      label = paste0(scales::number(
+        value,
+        accuracy = 1,
+        big.mark = ","
+      ), " acres")
+    ),
+    fontface = "bold",
+    hjust = -.05,
+    family = "Lato"
+  ) +
+  ggplot2::scale_x_continuous(
+    labels = NULL,
+    expand = expansion(mult = c(0, .25))
+  ) +
+  theme_cori_horizontal_bars() +
+  ggplot2::theme(
+    panel.grid.major.x = element_blank()
+  ) +
+  ggplot2::labs(
+    title = NULL,
+    subtitle = NULL,
+    y = NULL,
+    x = NULL,
+    caption = NULL
+  )
+
+save_plot(fig, here::here("export/ia_crop_totals_baseline.svg"), chart_height = 4, add_logo = FALSE)
+
+```
+
+
+```{r}
+
+fig <- dta_a %>%
+  ggplot2::ggplot(
+    aes(
+      value, name
+    )
+  ) +
+  ggplot2::geom_col(fill = params$graphics$default_color) +
+  geom_text(
+    aes(
+      label = paste0(scales::number(
+        value,
+        accuracy = 1,
+        big.mark = ","
+      ), " acres")
+    ),
+    fontface = "bold",
+    hjust = -.05,
+    family = "Lato"
+  ) +
+  ggplot2::scale_x_continuous(
+    labels = NULL,
+    expand = expansion(mult = c(0, .25))
+  ) +
+  theme_cori_horizontal_bars() +
+  ggplot2::theme(
+    panel.grid.major.x = element_blank()
+  ) +
+  ggplot2::labs(
+    title = NULL,
+    subtitle = NULL,
+    y = NULL,
+    x = NULL,
+    caption = NULL
+  )
+
+save_plot(fig, here::here("export/ia_crop_totals_a.svg"), chart_height = 4, add_logo = FALSE)
+
+```
+
+```{r}
+
+fig <- dta_b %>%
+  ggplot2::ggplot(
+    aes(
+      value, name
+    )
+  ) +
+  ggplot2::geom_col(fill = params$graphics$default_color) +
+  geom_text(
+    aes(
+      label = paste0(scales::number(
+        value,
+        accuracy = 1,
+        big.mark = ","
+      ), " acres")
+    ),
+    fontface = "bold",
+    hjust = -.05,
+    family = "Lato"
+  ) +
+  ggplot2::scale_x_continuous(
+    labels = NULL,
+    expand = expansion(mult = c(0, .25))
+  ) +
+  theme_cori_horizontal_bars() +
+  ggplot2::theme(
+    panel.grid.major.x = element_blank()
+  ) +
+  ggplot2::labs(
+    title = NULL,
+    subtitle = NULL,
+    y = NULL,
+    x = NULL,
+    caption = NULL
+  )
+
+save_plot(fig, here::here("export/ia_crop_totals_b.svg"), chart_height = 4, add_logo = FALSE)
+
+```
+
+
+```{r}
+
+fig <- dta_c %>%
+  ggplot2::ggplot(
+    aes(
+      value, name
+    )
+  ) +
+  ggplot2::geom_col(fill = params$graphics$default_color) +
+  geom_text(
+    aes(
+      label = paste0(scales::number(
+        value,
+        accuracy = 1,
+        big.mark = ","
+      ), " acres")
+    ),
+    fontface = "bold",
+    hjust = -.05,
+    family = "Lato"
+  ) +
+  ggplot2::scale_x_continuous(
+    labels = NULL,
+    expand = expansion(mult = c(0, .25))
+  ) +
+  theme_cori_horizontal_bars() +
+  ggplot2::theme(
+    panel.grid.major.x = element_blank()
+  ) +
+  ggplot2::labs(
+    title = NULL,
+    subtitle = NULL,
+    y = NULL,
+    x = NULL,
+    caption = NULL
+  )
+
+save_plot(fig, here::here("export/ia_crop_totals_c.svg"), chart_height = 4, add_logo = FALSE)
+
+```
+

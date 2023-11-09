@@ -1,0 +1,69 @@
+---
+title: "viz_final"
+output: html_document
+---
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(cori.charts)
+library(sysfonts)
+library(showtext)
+
+sysfonts::font_add_google("Lato")
+font_add(
+  "TT Hoves",
+  regular = "TypeType - TT Hoves Regular.ttf",
+  bold = "TypeType - TT Hoves Bold.ttf",
+  italic = "TypeType - TT Hoves Italic.ttf",
+  bolditalic = "TypeType - TT Hoves Bold Italic.ttf"
+)
+showtext_auto()
+showtext_opts(dpi = 300)
+
+here::i_am("R/viz_final.Rmd")
+
+source(here::here("R/utils.R"))
+source(here::here("R/get_scenario_a_data.R"))
+source(here::here("R/get_scenario_b_data.R"))
+source(here::here("R/get_scenario_c_data.R"))
+source(here::here("R/get_current_crop_data.R"))
+
+```
+
+
+```{r}
+
+params <- yaml::read_yaml(here::here("params.yml"))
+
+dta_baseline <- get_current_crop_data() %>% summarize_county_data()
+# dta_a <- get_scenario_a_data() %>% summarize_county_data()
+# dta_b <- get_scenario_b_data() %>% summarize_county_data()
+# dta_c <- get_scenario_c_data() %>% summarize_county_data()
+
+dta_N <- tibble::tribble(
+  ~scenario, ~value, ~name,
+  params$descriptions$a, 10347712.96, "improved_nitrogen_acres",
+  scenario_b_description$b, 4297959.18, "improved_nitrogen_acres",
+  scenario_c_description$c, 942189.64, "improved_nitrogen_acres"
+)
+
+```
+
+```{r}
+
+dta_clean <- dta_baseline %>%
+  tidyr::pivot_wider() %>%
+  mutate(
+    bare_ground_acres = corn_grain_acres_harvested + soybeans_acres_harvested - cover_crop_acres_planted
+  )
+
+```
+
+
+```{r}
+
+
+
+```

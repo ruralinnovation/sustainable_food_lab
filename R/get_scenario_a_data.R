@@ -1,5 +1,8 @@
 source(here::here("R/get_current_crop_data.R"))
 
+#' Function for getting IA county data for scenario A
+#'
+#' @return dataframe with update crop totals
 get_scenario_a_data <- function() {
 
   params <- yaml::read_yaml(here::here("params.yml"))

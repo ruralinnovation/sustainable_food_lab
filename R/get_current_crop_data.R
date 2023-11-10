@@ -70,9 +70,12 @@ get_current_crop_data <- function() {
       pct_cover_crop_acres = cover_crop_acres_planted / viable_cropland,
       # GEOID
       geoid_co = paste0(STATE_FIPS_CODE, COUNTY_CODE),
+      # Add LCC and extra acres for consistency
+      lcc_acres_harvested = 0,
+      extra_acres_covered_per_year = 0,
       # GHG emissions,
       co2_corn = corn_grain_acres_harvested * params$co2_per_acre$corn_grain,
-      co2_lcc = 0 * params$co2_per_acre$low_carbon_corn, # Assume no LCC in current scenario
+      co2_lcc = lcc_acres_harvested * params$co2_per_acre$low_carbon_corn,
       co2_soybeans = soybeans_acres_harvested * params$co2_per_acre$soybeans,
       co2_cover_crops = cover_crop_acres_planted * params$co2_per_acre$cover_crops,
       co2_oats = oats_acres_harvested * params$co2_per_acre$oats,

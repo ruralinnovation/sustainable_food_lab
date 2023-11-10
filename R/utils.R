@@ -45,7 +45,7 @@ get_ia_choropleth <- function(dta, fill_var, upper_limit = NA) {
 #' @param upper_limit upper limit of the fill range
 #'
 #' @return ggplot2 figure object
-get_ia_bubble_map <- function(dta, color_var, size_var, upper_limit = NA) {
+get_ia_bubble_map <- function(dta, color_var, size_var, is_color_number = FALSE, upper_limit = NA) {
 
   ia_counties <- tigris::counties(state = "IA", cb = TRUE, year = 2021)
   dta_cartogram <- sf::st_centroid(dta)
@@ -73,7 +73,10 @@ get_ia_bubble_map <- function(dta, color_var, size_var, upper_limit = NA) {
       midpoint = max_value/2,
       high = "#061E46",
       limits = c(0, upper_limit),
-      labels = scales::percent_format(scale = 100, accuracy = label_accuracy),
+      labels = ifelse(is_color_number == TRUE,
+        scales::number_format(accuracy = 1, scale_cut = scales::cut_short_scale()),
+        scales::percent_format(scale = 100, accuracy = label_accuracy)
+      ),
       n.breaks = 6
     ) +
     theme_cori_map() +
@@ -125,7 +128,6 @@ aggregate_county_crop_totals_to_state <- function(dta) {
     dplyr::summarise(
       cropland_acres_harvested = sum(cropland_acres_harvested, na.rm = T),
       corn_grain_acres_harvested = sum(corn_grain_acres_harvested, na.rm = T),
-      wheat_acres_harvested = sum(wheat_acres_harvested, na.rm = T),
       oats_acres_harvested = sum(oats_acres_harvested, na.rm = T),
       soybeans_acres_harvested = sum(soybeans_acres_harvested, na.rm = T),
       rye_acres_harvested = sum(rye_acres_harvested, na.rm = T),
@@ -136,8 +138,7 @@ aggregate_county_crop_totals_to_state <- function(dta) {
     ) |>
     dplyr::mutate(
       focus_crop_total = corn_grain_acres_harvested + oats_acres_harvested + soybeans_acres_harvested + rye_acres_harvested,
-      all_other = viable_cropland - focus_crop_total,
-      # small_grains = wheat_acres_harvested + oats_acres_harvested + rye_acres_harvested,
+      all_other = viable_cropland - focus_crop_total
     ) |>
     tidyr::pivot_longer(!STATE_NAME) |>
     dplyr::filter(
@@ -178,6 +179,38 @@ aggregate_county_crop_totals_to_state <- function(dta) {
       "Other harvested cropland"
     )
   )
+
+  return(dta_ia)
+
+}
+
+summarize_county_data <- function(dta) {
+
+  dta_ia <- dta |>
+    dplyr::group_by(STATE_NAME) |>
+    dplyr::summarise(
+      corn_grain_acres_harvested = sum(corn_grain_acres_harvested, na.rm = T),
+      soybeans_acres_harvested = sum(soybeans_acres_harvested, na.rm = T),
+      rye_acres_harvested = sum(rye_acres_harvested, na.rm = T),
+      oats_acres_harvested = sum(oats_acres_harvested, na.rm = T),
+      cover_crop_acres_planted = sum(cover_crop_acres_planted, na.rm = T),
+      lcc_acres_harvested = sum(lcc_acres_harvested, na.rm = T),
+      extra_acres_covered_per_year = sum(extra_acres_covered_per_year, na.rm = T),
+      viable_cropland = sum(viable_cropland, na.rm = T),
+      co2_corn = sum(co2_corn, na.rm = T),
+      co2_lcc = sum(co2_lcc, na.rm = T),
+      co2_soybeans = sum(co2_soybeans, na.rm = T),
+      co2_rye = sum(co2_rye, na.rm = T),
+      co2_oats = sum(co2_oats, na.rm = T),
+      co2_cover_crops = sum(co2_cover_crops),
+      co2_total = sum(co2_total, na.rm = T),
+      pct_cover_crops = cover_crop_acres_planted / viable_cropland,
+      pct_corn_grain = corn_grain_acres_harvested / viable_cropland,
+      pct_soybeans = soybeans_acres_harvested / viable_cropland,
+      pct_rye = rye_acres_harvested / viable_cropland,
+      pct_oats = oats_acres_harvested / viable_cropland
+    ) %>%
+    tidyr::pivot_longer(!STATE_NAME)
 
   return(dta_ia)
 

@@ -1,0 +1,335 @@
+---
+title: "viz_ia_crop_totals"
+output: html_document
+---
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(cori.charts)
+library(cartogram)
+library(sysfonts)
+library(showtext)
+library(treemapify)
+
+sysfonts::font_add_google("Lato")
+font_add(
+  "TT Hoves",
+  regular = "TypeType - TT Hoves Regular.ttf",
+  bold = "TypeType - TT Hoves Bold.ttf",
+  italic = "TypeType - TT Hoves Italic.ttf",
+  bolditalic = "TypeType - TT Hoves Bold Italic.ttf"
+)
+showtext_auto()
+showtext_opts(dpi = 300)
+
+here::i_am("R/viz_ia_crop_totals.Rmd")
+
+source(here::here("R/utils.R"))
+source(here::here("R/get_scenario_a_data.R"))
+source(here::here("R/get_scenario_b_data.R"))
+source(here::here("R/get_scenario_c_data.R"))
+source(here::here("R/get_current_crop_data.R"))
+
+```
+
+
+```{r}
+
+crop_variables <- c(
+  "corn_grain_acres_harvested",
+  "soybeans_acres_harvested",
+  "rye_acres_harvested",
+  "oats_acres_harvested"
+)
+
+name_order <- rev(c(
+  "Corn, grain",
+  "Soybeans",
+  "Rye",
+  "Oats"
+))
+
+dta_baseline <- get_current_crop_data() %>% summarize_county_data() %>%
+  filter(name %in% crop_variables) %>%
+  mutate(
+    name = case_match(name,
+      "corn_grain_acres_harvested" ~ "Corn, grain",
+      "soybeans_acres_harvested" ~ "Soybeans",
+      "rye_acres_harvested" ~ "Rye",
+      "oats_acres_harvested" ~ "Oats"
+    )
+  )
+
+dta_baseline$name <- factor(dta_baseline$name, levels = name_order)
+
+dta_a <- get_scenario_a_data() %>% summarize_county_data() %>%
+    filter(name %in% crop_variables) %>%
+  mutate(
+    name = case_match(name,
+      "corn_grain_acres_harvested" ~ "Corn, grain",
+      "soybeans_acres_harvested" ~ "Soybeans",
+      "rye_acres_harvested" ~ "Rye",
+      "oats_acres_harvested" ~ "Oats"
+    )
+  )
+
+dta_a$name <- factor(dta_a$name, levels = name_order)
+
+dta_b <- get_scenario_b_data() %>% summarize_county_data() %>%
+    filter(name %in% crop_variables) %>%
+  mutate(
+    name = case_match(name,
+      "corn_grain_acres_harvested" ~ "Corn, grain",
+      "soybeans_acres_harvested" ~ "Soybeans",
+      "rye_acres_harvested" ~ "Rye",
+      "oats_acres_harvested" ~ "Oats"
+    )
+  )
+
+dta_b$name <- factor(dta_b$name, levels = name_order)
+
+dta_c <- get_scenario_c_data() %>% summarize_county_data() %>%
+    filter(name %in% crop_variables) %>%
+  mutate(
+    name = case_match(name,
+      "corn_grain_acres_harvested" ~ "Corn, grain",
+      "soybeans_acres_harvested" ~ "Soybeans",
+      "rye_acres_harvested" ~ "Rye",
+      "oats_acres_harvested" ~ "Oats"
+    )
+  )
+
+dta_c$name <- factor(dta_c$name, levels = name_order)
+
+params <- yaml::read_yaml(here::here("params.yml"))
+
+height <- 3
+
+fill_scale <- c(
+  "Corn, grain" = "#FFD700",
+  "Soybeans" = "#556B2F",
+  "Rye" = "#7B68EE",
+  "Oats" = "#FFB6C1",
+  "Reduction" = "dimgray"
+)
+
+baseline_merge <- dta_baseline %>%
+  rename(
+    baseline_value = value
+  )
+
+```
+
+
+```{r}
+
+fig <- dta_baseline %>%
+  ggplot2::ggplot(
+    aes(
+      value, name, fill = name
+    )
+  ) +
+  ggplot2::geom_col() +
+  ggplot2::scale_x_continuous(
+    labels = NULL,
+    expand = expansion(mult = c(0, 0))
+  ) +
+  scale_fill_manual(values = fill_scale) +
+  theme_cori_horizontal_bars() +
+  ggplot2::theme(
+    panel.grid.major.x = element_blank(),
+    axis.line.y.left = element_blank(),
+    axis.text.y = element_blank(),
+    legend.position = "none"
+  ) +
+  ggplot2::labs(
+    title = NULL,
+    subtitle = NULL,
+    y = NULL,
+    x = NULL,
+    caption = NULL
+  )
+
+save_plot(fig, here::here("export/ia_crop_totals_baseline.svg"), chart_height = height, add_logo = FALSE)
+
+```
+
+
+```{r}
+
+chrt_dta <- left_join(
+    dta_a,
+    baseline_merge,
+    by = c("STATE_NAME", "name")
+  ) %>%
+  mutate(
+    gap = ifelse(baseline_value >= value, baseline_value - value, 0)
+  ) %>% 
+  select(STATE_NAME, name, gap) %>%
+  rename(
+    value = gap
+  ) %>%
+  mutate(
+    category = "Reduction"
+  ) %>%
+  filter(
+    value > 0
+  ) %>%
+  bind_rows(
+    dta_a %>% mutate(category = name)
+  )
+
+chrt_dta$category <- factor(chrt_dta$category, levels = rev(c(
+  "Corn, grain",
+  "Soybeans",
+  "Rye",
+  "Oats",
+  "Reduction"
+)))
+
+fig <- chrt_dta %>%
+  ggplot(aes(fill= category, y = name, x=value)) + 
+    geom_bar(position="stack", stat="identity") +
+    scale_fill_manual(values = fill_scale) +
+  ggplot2::scale_x_continuous(
+    labels = NULL,
+    expand = expansion(mult = c(0, 0))
+  ) +
+  theme_cori_horizontal_bars() +
+  ggplot2::theme(
+    panel.grid.major.x = element_blank(),
+    axis.line.y.left = element_blank(),
+    axis.text.y = element_blank(),
+    legend.position = "none"
+  ) +
+  ggplot2::labs(
+    title = NULL,
+    subtitle = NULL,
+    y = NULL,
+    x = NULL,
+    caption = NULL
+  )
+
+save_plot(fig, here::here("export/ia_crop_totals_a.svg"), chart_height = height, add_logo = FALSE)
+
+```
+
+```{r}
+
+chrt_dta <- left_join(
+    dta_b,
+    baseline_merge,
+    by = c("STATE_NAME", "name")
+  ) %>%
+  mutate(
+    gap = ifelse(baseline_value >= value, baseline_value - value, 0)
+  ) %>% 
+  select(STATE_NAME, name, gap) %>%
+  rename(
+    value = gap
+  ) %>%
+  mutate(
+    category = "Reduction"
+  ) %>%
+  filter(
+    value > 0
+  ) %>%
+  bind_rows(
+    dta_b %>% mutate(category = name)
+  )
+
+chrt_dta$category <- factor(chrt_dta$category, levels = rev(c(
+  "Corn, grain",
+  "Soybeans",
+  "Rye",
+  "Oats",
+  "Reduction"
+)))
+
+fig <- chrt_dta %>%
+  ggplot(aes(fill= category, y = name, x=value)) + 
+    geom_bar(position="stack", stat="identity") +
+    scale_fill_manual(values = fill_scale) +
+  ggplot2::scale_x_continuous(
+    labels = NULL,
+    expand = expansion(mult = c(0, 0))
+  ) +
+  theme_cori_horizontal_bars() +
+  ggplot2::theme(
+    panel.grid.major.x = element_blank(),
+    axis.line.y.left = element_blank(),
+    axis.text.y = element_blank(),
+    legend.position = "none"
+  ) +
+  ggplot2::labs(
+    title = NULL,
+    subtitle = NULL,
+    y = NULL,
+    x = NULL,
+    caption = NULL
+  )
+
+save_plot(fig, here::here("export/ia_crop_totals_b.svg"), chart_height = height, add_logo = FALSE)
+
+```
+
+```{r}
+
+chrt_dta <- left_join(
+    dta_c,
+    baseline_merge,
+    by = c("STATE_NAME", "name")
+  ) %>%
+  mutate(
+    gap = ifelse(baseline_value >= value, baseline_value - value, 0)
+  ) %>% 
+  select(STATE_NAME, name, gap) %>%
+  rename(
+    value = gap
+  ) %>%
+  mutate(
+    category = "Reduction"
+  ) %>%
+  filter(
+    value > 0
+  ) %>%
+  bind_rows(
+    dta_c %>% mutate(category = name)
+  )
+
+chrt_dta$category <- factor(chrt_dta$category, levels = rev(c(
+  "Corn, grain",
+  "Soybeans",
+  "Rye",
+  "Oats",
+  "Reduction"
+)))
+
+fig <- chrt_dta %>%
+  ggplot(aes(fill= category, y = name, x=value)) + 
+    geom_bar(position="stack", stat="identity") +
+    scale_fill_manual(values = fill_scale) +
+  ggplot2::scale_x_continuous(
+    labels = NULL,
+    expand = expansion(mult = c(0, 0))
+  ) +
+  theme_cori_horizontal_bars() +
+  ggplot2::theme(
+    panel.grid.major.x = element_blank(),
+    axis.line.y.left = element_blank(),
+    axis.text.y = element_blank(),
+    legend.position = "none"
+  ) +
+  ggplot2::labs(
+    title = NULL,
+    subtitle = NULL,
+    y = NULL,
+    x = NULL,
+    caption = NULL
+  )
+
+save_plot(fig, here::here("export/ia_crop_totals_c.svg"), chart_height = height, add_logo = FALSE)
+
+```

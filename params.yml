@@ -20,3 +20,10 @@ converted_cropland:
   pct_converted_to_oats: .02
 ratios:
   planted_acres_from_1_acre_rye_seed: 50
+graphics:
+  default_color: "#259299"
+descriptions:
+  baseline: "Current baseline for corn grain, soybeans, oats, and rye coverage"
+  a: "If one acre of fall cover crop was added for every acre of soybeans"
+  b: "If all Iowa hogs were fed a ration of rye"
+  c: "If 2% of harvested cropland was converted to oats"

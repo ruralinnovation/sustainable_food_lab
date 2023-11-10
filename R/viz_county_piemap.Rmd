@@ -1,0 +1,232 @@
+---
+title: "viz_county_piemap"
+output: html_document
+---
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(cori.charts)
+library(sf)
+library(sysfonts)
+library(showtext)
+library(ggbeeswarm)
+
+sysfonts::font_add_google("Lato")
+font_add(
+  "TT Hoves",
+  regular = "TypeType - TT Hoves Regular.ttf",
+  bold = "TypeType - TT Hoves Bold.ttf",
+  italic = "TypeType - TT Hoves Italic.ttf",
+  bolditalic = "TypeType - TT Hoves Bold Italic.ttf"
+)
+showtext_auto()
+showtext_opts(dpi = 300)
+
+here::i_am("R/viz_county_piemap.Rmd")
+
+source(here::here("R/utils.R"))
+source(here::here("R/get_scenario_a_data.R"))
+source(here::here("R/get_scenario_b_data.R"))
+source(here::here("R/get_scenario_c_data.R"))
+
+```
+
+
+```{r}
+
+params <- yaml::read_yaml(here::here("params.yml"))
+
+ia_counties <- tigris::counties(state = "IA", cb = TRUE, year = 2021)
+
+baseline_description <- params$descriptions$baseline
+scenario_a_description <- params$descriptions$a
+scenario_b_description <- params$descriptions$b
+scenario_c_description <- params$descriptions$c
+
+dta_baseline <- get_current_crop_data() %>%
+  mutate(scenario = baseline_description)
+
+dta_a <- get_scenario_a_data() %>%
+  mutate(scenario = scenario_a_description)
+
+dta_b <- get_scenario_b_data() %>%
+  mutate(scenario = scenario_b_description)
+
+dta_c <- get_scenario_c_data() %>%
+  mutate(scenario = scenario_c_description)
+
+dta <- bind_rows(
+    dta_baseline,
+    dta_a,
+    dta_b,
+    dta_c
+  ) %>%
+  left_join(
+    .,
+    ia_counties,
+    by = c("geoid_co" = "GEOID")
+  ) %>%
+  sf::st_as_sf()
+
+dta$scenario <- factor(dta$scenario, levels = c(
+ baseline_description,
+  scenario_a_description,
+  scenario_b_description,
+  scenario_c_description
+))
+
+
+```
+
+
+```{r}
+
+library(scatterpie)
+
+ia_lat_lon <- dta %>%
+  st_transform(crs = 4326) %>%
+  st_centroid() %>%
+  st_coordinates() %>%
+  as.data.frame() %>%
+  rename(lat = Y, lon = X)
+
+map_dta <- cbind(dta, ia_lat_lon) %>%
+  mutate(
+    `Corn grain and soybean` = corn_grain_acres_harvested + soybeans_acres_harvested,
+    `Rye, oats, low carbon corn, and cover crops` = cover_crop_acres_planted + oats_acres_harvested + rye_acres_harvested + lcc_acres_harvested
+  ) %>%
+  sf::st_drop_geometry()
+
+ia_counties <- tigris::counties(state = "IA", cb = TRUE, year = 2021)
+
+```
+
+```{r}
+
+radius_multiplier <- .0000004
+fig <- ggplot() +
+  geom_sf(data = ia_counties, fill = NA, color= "black", linewidth = .25)+
+    geom_scatterpie(
+      aes(x=lon, y=lat, group=NAME, r = radius_multiplier * viable_cropland), 
+      data = map_dta %>%filter(scenario == scenario_a_description),
+      cols = c(
+        "Corn grain and soybean",
+        "Rye, oats, low carbon corn, and cover crops"
+      )
+    ) +
+  scale_fill_manual(
+    values = c(
+      "Corn grain and soybean" = "#7B3F00",
+      "Rye, oats, low carbon corn, and cover crops" = "#00835D"
+    )
+  ) +
+  theme_cori_map() +
+  labs(
+    title = params$descriptions$a,
+    subtitle = "Crop coverage by county, circles size by total harvested cropland",
+    x = NULL,
+    y = NULL,
+    caption = "Source: 2017 Census of Agriculture"
+  )
+
+save_plot(fig, here::here("export/ia_crop_coverage_scatterpie_a.png"), chart_height = 7.2)
+
+# Even though we could, we never stopped to ask if we should
+
+```
+
+
+```{r}
+
+fig <- ggplot() +
+  geom_sf(data = ia_counties, fill = NA, color= "black", linewidth = .25)+
+    geom_scatterpie(
+      aes(x=lon, y=lat, group=NAME, r = radius_multiplier * viable_cropland), 
+      data = map_dta %>% filter(scenario == scenario_b_description),
+      cols = c(
+        "Corn grain and soybean",
+        "Rye, oats, low carbon corn, and cover crops"
+      )
+    ) +
+  scale_fill_manual(
+    values = c(
+      "Corn grain and soybean" = "#7B3F00",
+      "Rye, oats, low carbon corn, and cover crops" = "#00835D"
+    )
+  ) +
+  theme_cori_map() +
+  labs(
+    title = params$descriptions$b,
+    subtitle = "Crop coverage by county, circles size by total harvested cropland",
+    x = NULL,
+    y = NULL,
+    caption = "Source: 2017 Census of Agriculture"
+  )
+
+save_plot(fig, here::here("export/ia_crop_coverage_scatterpie_b.png"), chart_height = 7.2)
+
+```
+
+```{r}
+
+fig <- ggplot() +
+  geom_sf(data = ia_counties, fill = NA, color= "black", linewidth = .25)+
+    geom_scatterpie(
+      aes(x=lon, y=lat, group=NAME, r = radius_multiplier * viable_cropland), 
+      data = map_dta %>%filter(scenario == scenario_c_description),
+      cols = c(
+        "Corn grain and soybean",
+        "Rye, oats, low carbon corn, and cover crops"
+      )
+    ) +
+  scale_fill_manual(
+    values = c(
+      "Corn grain and soybean" = "#7B3F00",
+      "Rye, oats, low carbon corn, and cover crops" = "#00835D"
+    )
+  ) +
+  theme_cori_map() +
+  labs(
+    title = params$descriptions$c,
+    subtitle = "Crop coverage by county, circles size by total harvested cropland",
+    x = NULL,
+    y = NULL,
+    caption = "Source: 2017 Census of Agriculture"
+  )
+
+save_plot(fig, here::here("export/ia_crop_coverage_scatterpie_c.png"), chart_height = 7.2)
+
+```
+
+```{r}
+
+fig <- ggplot() +
+  geom_sf(data = ia_counties, fill = NA, color= "black", linewidth = .25)+
+    geom_scatterpie(
+      aes(x=lon, y=lat, group=NAME, r = radius_multiplier * viable_cropland), 
+      data = map_dta %>%filter(scenario == baseline_description),
+      cols = c(
+        "Corn grain and soybean",
+        "Rye, oats, low carbon corn, and cover crops"
+      )
+    ) +
+  scale_fill_manual(
+    values = c(
+      "Corn grain and soybean" = "#7B3F00",
+      "Rye, oats, low carbon corn, and cover crops" = "#00835D"
+    )
+  ) +
+  theme_cori_map() +
+  labs(
+    title = "Iowa crop coverage baseline",
+    subtitle = "Crop coverage by county, circles size by total harvested cropland",
+    x = NULL,
+    y = NULL,
+    caption = "Source: 2017 Census of Agriculture"
+  )
+
+save_plot(fig, here::here("export/ia_crop_coverage_scatterpie_baseline.png"), chart_height = 7.2)
+
+```

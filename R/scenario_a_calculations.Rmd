@@ -18,8 +18,9 @@ source(here::here("R/get_scenario_a_data.R"))
 
 
 ```{r}
-
+# Read in Params file
 params <- yaml::read_yaml(here::here("params.yml"))
+# Pull in Calculations for scenario A
 dta_calc <- get_scenario_a_data()
 
 ```
@@ -30,6 +31,7 @@ Scenario A: Introduce 1 acre of fall cover crop for every acre of harvested soyb
 
 ```{r}
 
+# Aggregate county data to the state level
 dta_calc_ia <- dta_calc %>%
   group_by(STATE_NAME) %>%
   summarise(

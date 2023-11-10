@@ -184,7 +184,6 @@ aggregate_county_crop_totals_to_state <- function(dta) {
 
 }
 
-
 summarize_county_data <- function(dta) {
 
   dta_ia <- dta |>

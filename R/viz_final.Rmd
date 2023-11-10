@@ -38,32 +38,46 @@ source(here::here("R/get_current_crop_data.R"))
 params <- yaml::read_yaml(here::here("params.yml"))
 
 dta_baseline <- get_current_crop_data() %>% summarize_county_data()
-# dta_a <- get_scenario_a_data() %>% summarize_county_data()
-# dta_b <- get_scenario_b_data() %>% summarize_county_data()
-# dta_c <- get_scenario_c_data() %>% summarize_county_data()
+dta_a <- get_scenario_a_data() %>% summarize_county_data()
+dta_b <- get_scenario_b_data() %>% summarize_county_data()
+dta_c <- get_scenario_c_data() %>% summarize_county_data()
 
-dta_N <- tibble::tribble(
-  ~scenario, ~value, ~name,
-  params$descriptions$a, 10347712.96, "improved_nitrogen_acres",
-  scenario_b_description$b, 4297959.18, "improved_nitrogen_acres",
-  scenario_c_description$c, 942189.64, "improved_nitrogen_acres"
-)
+# dta_N <- tibble::tribble(
+#   ~scenario, ~value, ~name,
+#   params$descriptions$a, 10347712.96, "improved_nitrogen_acres",
+#   params$descriptions$b, 4297959.18, "improved_nitrogen_acres",
+#   params$descriptions$c, 942189.64, "improved_nitrogen_acres"
+# )
 
 ```
 
+
+
 ```{r}
 
-dta_clean <- dta_baseline %>%
+# Make the bare ground stacked bar chart
+fig <- dta_a %>%
   tidyr::pivot_wider() %>%
   mutate(
-    bare_ground_acres = corn_grain_acres_harvested + soybeans_acres_harvested - cover_crop_acres_planted
+    bare_ground_acres = corn_grain_acres_harvested + soybeans_acres_harvested
+  ) %>%
+  mutate(
+    category = "EMPTY"
+  ) %>%
+  ggplot(aes(x = category)) +
+  geom_bar(aes(y = bare_ground_acres, fill = "Value1"), stat = "identity") +
+  geom_bar(aes(y = cover_crop_acres_planted, fill = "Value2"), stat = "identity") +
+  scale_fill_manual(values = c("Value1" = "#234FBF", "Value2" = "#00835D")) +
+  labs(title = NULL, subtitle = NULL, y = NULL, x = NULL, caption = NULL) +
+  theme_cori() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.line.x = element_blank(),
+    legend.position = "none"
   )
 
-```
-
-
-```{r}
-
-
+save_plot(fig, here::here("export/bare_ground_a.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
 
 ```

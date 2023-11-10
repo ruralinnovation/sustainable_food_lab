@@ -24,7 +24,7 @@ get_current_crop_data <- function() {
               "COMMODITY_DESC", "SECTOR_DESC")) |>
     dplyr::distinct() |>
     dplyr::mutate(
-      SHORT_DESC = case_match(
+      SHORT_DESC = dplyr::case_match(
         SHORT_DESC,
         "AG LAND, CROPLAND, HARVESTED - ACRES" ~ "cropland_acres_harvested",
         "HAY, ALFALFA - ACRES HARVESTED" ~ "hay_alfalfa_acres_harvested",

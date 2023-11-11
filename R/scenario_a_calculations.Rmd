@@ -5,13 +5,16 @@ output: html_document
 
 ```{r}
 
+library(cori.utils) # <- import include() function
 library(dplyr)
 library(ggplot2)
 library(yaml)
 
 here::i_am("R/scenario_a_calculations.Rmd")
-source(here::here("R/utils.R"))
-source(here::here("R/get_scenario_a_data.R"))
+# source(here::here("R/utils.R"))
+# source(here::here("R/get_scenario_a_data.R"))
+include(here::here("R/utils.R"))
+include(here::here("R/get_scenario_a_data.R"))
 
 ```
 

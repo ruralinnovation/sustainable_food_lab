@@ -208,7 +208,10 @@ summarize_county_data <- function(dta) {
       pct_corn_grain = corn_grain_acres_harvested / viable_cropland,
       pct_soybeans = soybeans_acres_harvested / viable_cropland,
       pct_rye = rye_acres_harvested / viable_cropland,
-      pct_oats = oats_acres_harvested / viable_cropland
+      pct_oats = oats_acres_harvested / viable_cropland,
+      # calculate
+      regen_ag_acres = cover_crop_acres_planted + lcc_acres_harvested + rye_acres_harvested + oats_acres_harvested,
+      bare_ground_acres = 22919364 - regen_ag_acres
     ) %>%
     tidyr::pivot_longer(!STATE_NAME)
 

@@ -108,16 +108,38 @@ params <- yaml::read_yaml(here::here("params.yml"))
 height <- 3
 
 fill_scale <- c(
-  "Corn, grain" = "#FFD700",
-  "Soybeans" = "#556B2F",
-  "Rye" = "#7B68EE",
-  "Oats" = "#FFB6C1",
-  "Reduction" = "dimgray"
+  "Corn, grain" = params$colors$corn_grain,
+  "Soybeans" = params$colors$soybeans,
+  "Rye" = params$colors$rye,
+  "Oats" = params$colors$oats,
+  "Low carbon corn" = params$colors$low_carbon_corn,
+  "Reduction" = params$colors$reduction
 )
 
 baseline_merge <- dta_baseline %>%
   rename(
     baseline_value = value
+  )
+
+lcc_a <- get_scenario_a_data() %>% summarize_county_data() %>% 
+  filter(name == "lcc_acres_harvested") %>% 
+  mutate(
+    category = "Low carbon corn",
+    name = "Corn, grain"
+  )
+
+lcc_b <- get_scenario_b_data() %>% summarize_county_data() %>%
+  filter(name == "lcc_acres_harvested") %>% 
+  mutate(
+    category = "Low carbon corn",
+    name = "Corn, grain"
+  )
+
+lcc_c <- get_scenario_c_data() %>% summarize_county_data() %>%
+  filter(name == "lcc_acres_harvested") %>% 
+  mutate(
+    category = "Low carbon corn",
+    name = "Corn, grain"
   )
 
 ```
@@ -177,8 +199,12 @@ chrt_dta <- left_join(
   filter(
     value > 0
   ) %>%
+  mutate(
+    value = ifelse(name == "Corn, grain", (value - lcc_a %>% pull(value) %>% max()), value)
+  ) %>%
   bind_rows(
-    dta_a %>% mutate(category = name)
+    dta_a %>% mutate(category = name),
+    lcc_a
   )
 
 chrt_dta$category <- factor(chrt_dta$category, levels = rev(c(
@@ -186,6 +212,7 @@ chrt_dta$category <- factor(chrt_dta$category, levels = rev(c(
   "Soybeans",
   "Rye",
   "Oats",
+  "Low carbon corn",
   "Reduction"
 )))
 
@@ -196,6 +223,9 @@ fig <- chrt_dta %>%
   ggplot2::scale_x_continuous(
     labels = NULL,
     expand = expansion(mult = c(0, 0))
+  ) +
+    scale_y_discrete(
+    limits = name_order
   ) +
   theme_cori_horizontal_bars() +
   ggplot2::theme(
@@ -215,6 +245,7 @@ fig <- chrt_dta %>%
 save_plot(fig, here::here("export/ia_crop_totals_a.svg"), chart_height = height, add_logo = FALSE)
 
 ```
+
 
 ```{r}
 
@@ -236,8 +267,12 @@ chrt_dta <- left_join(
   filter(
     value > 0
   ) %>%
+  mutate(
+    value = ifelse(name == "Corn, grain", (value - lcc_b %>% pull(value) %>% max()), value)
+  ) %>%
   bind_rows(
-    dta_b %>% mutate(category = name)
+    dta_b %>% mutate(category = name),
+    lcc_b
   )
 
 chrt_dta$category <- factor(chrt_dta$category, levels = rev(c(
@@ -245,6 +280,7 @@ chrt_dta$category <- factor(chrt_dta$category, levels = rev(c(
   "Soybeans",
   "Rye",
   "Oats",
+  "Low carbon corn",
   "Reduction"
 )))
 
@@ -255,6 +291,9 @@ fig <- chrt_dta %>%
   ggplot2::scale_x_continuous(
     labels = NULL,
     expand = expansion(mult = c(0, 0))
+  ) +
+    scale_y_discrete(
+    limits = name_order
   ) +
   theme_cori_horizontal_bars() +
   ggplot2::theme(
@@ -273,7 +312,9 @@ fig <- chrt_dta %>%
 
 save_plot(fig, here::here("export/ia_crop_totals_b.svg"), chart_height = height, add_logo = FALSE)
 
+
 ```
+
 
 ```{r}
 
@@ -295,8 +336,12 @@ chrt_dta <- left_join(
   filter(
     value > 0
   ) %>%
+  mutate(
+    value = ifelse(name == "Corn, grain", (value - lcc_c %>% pull(value) %>% max()), value)
+  ) %>%
   bind_rows(
-    dta_c %>% mutate(category = name)
+    dta_c %>% mutate(category = name),
+    lcc_c
   )
 
 chrt_dta$category <- factor(chrt_dta$category, levels = rev(c(
@@ -304,6 +349,7 @@ chrt_dta$category <- factor(chrt_dta$category, levels = rev(c(
   "Soybeans",
   "Rye",
   "Oats",
+  "Low carbon corn",
   "Reduction"
 )))
 
@@ -314,6 +360,9 @@ fig <- chrt_dta %>%
   ggplot2::scale_x_continuous(
     labels = NULL,
     expand = expansion(mult = c(0, 0))
+  ) +
+    scale_y_discrete(
+    limits = name_order
   ) +
   theme_cori_horizontal_bars() +
   ggplot2::theme(

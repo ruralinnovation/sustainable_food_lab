@@ -20,8 +20,16 @@ converted_cropland:
   pct_converted_to_oats: .02
 ratios:
   planted_acres_from_1_acre_rye_seed: 50
-graphics:
-  default_color: "#259299"
+colors:
+  corn_grain: "#FFD700"
+  soybeans: "#c7d48e"
+  cover_crops: "#1A6887"
+  rye: "#753984"
+  oats: "#f097a5"
+  low_carbon_corn: "#b38b0b"
+  reduction: "dimgray"
+  bare_ground: "#CD7F32"
+  regen_ag: "#00835D"
 descriptions:
   baseline: "Current baseline for corn grain, soybeans, oats, and rye coverage"
   a: "If one acre of fall cover crop was added for every acre of soybeans"

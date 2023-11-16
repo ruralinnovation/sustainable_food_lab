@@ -1,3 +1,6 @@
+source:
+  state_abbr: 'IA'
+  url: 'https://www.nass.usda.gov/Publications/AgCensus/2017/Online_Resources/Census_Data_Query_Tool/2017_cdqt_data.txt.gz'
 co2_per_acre:
   corn_grain: 2454.93
   soybeans: 1004.01

@@ -1,0 +1,155 @@
+---
+title: "viz_final"
+output: html_document
+---
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(cori.charts)
+library(sysfonts)
+library(showtext)
+
+sysfonts::font_add_google("Lato")
+font_add(
+  "TT Hoves",
+  regular = "TypeType - TT Hoves Regular.ttf",
+  bold = "TypeType - TT Hoves Bold.ttf",
+  italic = "TypeType - TT Hoves Italic.ttf",
+  bolditalic = "TypeType - TT Hoves Bold Italic.ttf"
+)
+showtext_auto()
+showtext_opts(dpi = 300)
+
+here::i_am("R/viz_bare_ground_breakdown.Rmd")
+
+source(here::here("R/utils.R"))
+source(here::here("R/get_scenario_a_data.R"))
+source(here::here("R/get_scenario_b_data.R"))
+source(here::here("R/get_scenario_c_data.R"))
+source(here::here("R/get_current_crop_data.R"))
+
+```
+
+
+```{r}
+
+params <- yaml::read_yaml(here::here("params.yml"))
+
+dta_baseline <- get_current_crop_data() %>% summarize_county_data()
+dta_a <- get_scenario_a_data() %>% summarize_county_data()
+dta_b <- get_scenario_b_data() %>% summarize_county_data()
+dta_c <- get_scenario_c_data() %>% summarize_county_data()
+
+fill_scale <- c(
+  "bare_ground_acres" = params$colors$bare_ground,
+  "regen_ag_acres" = params$colors$regen_ag
+)
+
+```
+
+
+
+```{r}
+
+# Make the bare ground stacked bar chart
+fig <- dta_a %>%
+  tidyr::pivot_wider() %>%
+  select(STATE_NAME, bare_ground_acres, regen_ag_acres) %>%
+  tidyr::pivot_longer(!STATE_NAME) %>%
+  ggplot(
+    aes(STATE_NAME, value, fill = name)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values = fill_scale) +
+  labs(title = NULL, subtitle = NULL, y = NULL, x = NULL, caption = NULL) +
+  theme_cori() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.line.x = element_blank(),
+    legend.position = "none"
+  )
+
+save_plot(fig, here::here("export/bare_ground_a.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
+
+```
+
+
+```{r}
+
+# Make the bare ground stacked bar chart
+fig <- dta_b %>%
+  tidyr::pivot_wider() %>%
+  select(STATE_NAME, bare_ground_acres, regen_ag_acres) %>%
+  tidyr::pivot_longer(!STATE_NAME) %>%
+  ggplot(
+    aes(STATE_NAME, value, fill = name)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values = fill_scale) +
+  labs(title = NULL, subtitle = NULL, y = NULL, x = NULL, caption = NULL) +
+  theme_cori() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.line.x = element_blank(),
+    legend.position = "none"
+  )
+
+save_plot(fig, here::here("export/bare_ground_b.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
+
+```
+
+
+```{r}
+
+# Make the bare ground stacked bar chart
+fig <- dta_c %>%
+  tidyr::pivot_wider() %>%
+  select(STATE_NAME, bare_ground_acres, regen_ag_acres) %>%
+  tidyr::pivot_longer(!STATE_NAME) %>%
+  ggplot(
+    aes(STATE_NAME, value, fill = name)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values = fill_scale) +
+  labs(title = NULL, subtitle = NULL, y = NULL, x = NULL, caption = NULL) +
+  theme_cori() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.line.x = element_blank(),
+    legend.position = "none"
+  )
+
+save_plot(fig, here::here("export/bare_ground_c.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
+
+```
+
+
+```{r}
+
+# Make the bare ground stacked bar chart
+fig <- dta_baseline %>%
+  tidyr::pivot_wider() %>%
+  select(STATE_NAME, bare_ground_acres, regen_ag_acres) %>%
+  tidyr::pivot_longer(!STATE_NAME) %>%
+  ggplot(
+    aes(STATE_NAME, value, fill = name)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values = fill_scale) +
+  labs(title = NULL, subtitle = NULL, y = NULL, x = NULL, caption = NULL) +
+  theme_cori() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.line.x = element_blank(),
+    legend.position = "none"
+  )
+
+save_plot(fig, here::here("export/bare_ground_baseline.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
+
+```

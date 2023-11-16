@@ -20,6 +20,7 @@ source(here::here("R/get_scenario_a_data.R"))
 # Read in Params file
 params <- yaml::read_yaml(here::here("params.yml"))
 # Pull in Calculations for scenario A
+# TODO: Comment here about pre-processing script ...
 dta_calc <- get_scenario_a_data()
 
 ```

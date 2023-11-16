@@ -1,5 +1,5 @@
 ---
-title: "viz_regen_ag_acres"
+title: "viz_final"
 output: html_document
 ---
 
@@ -22,7 +22,7 @@ font_add(
 showtext_auto()
 showtext_opts(dpi = 300)
 
-here::i_am("R/viz_regen_ag_acres.Rmd")
+here::i_am("R/viz_bare_ground_breakdown.Rmd")
 
 source(here::here("R/utils.R"))
 source(here::here("R/get_scenario_a_data.R"))
@@ -42,64 +42,26 @@ dta_a <- get_scenario_a_data() %>% summarize_county_data()
 dta_b <- get_scenario_b_data() %>% summarize_county_data()
 dta_c <- get_scenario_c_data() %>% summarize_county_data()
 
-regen_crop_order <- c(
-  "cover_crop_acres_planted",
- "lcc_acres_harvested",
- "rye_acres_harvested",
- "oats_acres_harvested" 
-)
-
 fill_scale <- c(
- "cover_crop_acres_planted" = params$colors$cover_crops,
- "lcc_acres_harvested" = params$colors$low_carbon_corn,
- "rye_acres_harvested" = params$colors$rye,
- "oats_acres_harvested" = params$colors$oats
+  "bare_ground_acres" = params$colors$bare_ground,
+  "regen_ag_acres" = params$colors$regen_ag
 )
 
 ```
 
 
-```{r}
-
-fig <- dta_baseline %>%
-  tidyr::pivot_wider() %>%
-  select(STATE_NAME, cover_crop_acres_planted, lcc_acres_harvested, rye_acres_harvested, oats_acres_harvested) %>%
-  tidyr::pivot_longer(!STATE_NAME) %>%
-  mutate(
-    name = factor(name, levels = regen_crop_order)
-  ) %>%
-  ggplot(
-    aes(STATE_NAME, value, fill = name)) +
-  geom_bar(stat="identity") +
- scale_fill_manual(values = fill_scale) +
-  labs(title = NULL, subtitle = NULL, y = NULL, x = NULL, caption = NULL) +
-  theme_cori() +
-  theme(
-    panel.grid.major.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.text.x = element_blank(),
-    axis.line.x = element_blank(),
-    legend.position = "none"
-  )
-
-save_plot(fig, here::here("export/regen_ag_baseline.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
-
-```
-
 
 ```{r}
 
+# Make the bare ground stacked bar chart
 fig <- dta_a %>%
   tidyr::pivot_wider() %>%
-  select(STATE_NAME, cover_crop_acres_planted, lcc_acres_harvested, rye_acres_harvested, oats_acres_harvested) %>%
+  select(STATE_NAME, bare_ground_acres, regen_ag_acres) %>%
   tidyr::pivot_longer(!STATE_NAME) %>%
-  mutate(
-    name = factor(name, levels = regen_crop_order)
-  ) %>%
   ggplot(
     aes(STATE_NAME, value, fill = name)) +
   geom_bar(stat="identity") +
- scale_fill_manual(values = fill_scale) +
+  scale_fill_manual(values = fill_scale) +
   labs(title = NULL, subtitle = NULL, y = NULL, x = NULL, caption = NULL) +
   theme_cori() +
   theme(
@@ -110,24 +72,22 @@ fig <- dta_a %>%
     legend.position = "none"
   )
 
-save_plot(fig, here::here("export/regen_ag_a.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
+save_plot(fig, here::here("export/bare_ground_a.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
 
 ```
 
 
 ```{r}
 
+# Make the bare ground stacked bar chart
 fig <- dta_b %>%
   tidyr::pivot_wider() %>%
-  select(STATE_NAME, cover_crop_acres_planted, lcc_acres_harvested, rye_acres_harvested, oats_acres_harvested) %>%
+  select(STATE_NAME, bare_ground_acres, regen_ag_acres) %>%
   tidyr::pivot_longer(!STATE_NAME) %>%
-  mutate(
-    name = factor(name, levels = regen_crop_order)
-  ) %>%
   ggplot(
     aes(STATE_NAME, value, fill = name)) +
   geom_bar(stat="identity") +
- scale_fill_manual(values = fill_scale) +
+  scale_fill_manual(values = fill_scale) +
   labs(title = NULL, subtitle = NULL, y = NULL, x = NULL, caption = NULL) +
   theme_cori() +
   theme(
@@ -138,23 +98,22 @@ fig <- dta_b %>%
     legend.position = "none"
   )
 
-save_plot(fig, here::here("export/regen_ag_b.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
+save_plot(fig, here::here("export/bare_ground_b.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
 
 ```
+
 
 ```{r}
 
+# Make the bare ground stacked bar chart
 fig <- dta_c %>%
   tidyr::pivot_wider() %>%
-  select(STATE_NAME, cover_crop_acres_planted, lcc_acres_harvested, rye_acres_harvested, oats_acres_harvested) %>%
+  select(STATE_NAME, bare_ground_acres, regen_ag_acres) %>%
   tidyr::pivot_longer(!STATE_NAME) %>%
-  mutate(
-    name = factor(name, levels = regen_crop_order)
-  ) %>%
   ggplot(
     aes(STATE_NAME, value, fill = name)) +
   geom_bar(stat="identity") +
- scale_fill_manual(values = fill_scale) +
+  scale_fill_manual(values = fill_scale) +
   labs(title = NULL, subtitle = NULL, y = NULL, x = NULL, caption = NULL) +
   theme_cori() +
   theme(
@@ -165,8 +124,32 @@ fig <- dta_c %>%
     legend.position = "none"
   )
 
-save_plot(fig, here::here("export/regen_ag_c.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
+save_plot(fig, here::here("export/bare_ground_c.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
 
 ```
 
 
+```{r}
+
+# Make the bare ground stacked bar chart
+fig <- dta_baseline %>%
+  tidyr::pivot_wider() %>%
+  select(STATE_NAME, bare_ground_acres, regen_ag_acres) %>%
+  tidyr::pivot_longer(!STATE_NAME) %>%
+  ggplot(
+    aes(STATE_NAME, value, fill = name)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values = fill_scale) +
+  labs(title = NULL, subtitle = NULL, y = NULL, x = NULL, caption = NULL) +
+  theme_cori() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.line.x = element_blank(),
+    legend.position = "none"
+  )
+
+save_plot(fig, here::here("export/bare_ground_baseline.svg"), chart_width = 2, chart_height = 4, add_logo = FALSE)
+
+```

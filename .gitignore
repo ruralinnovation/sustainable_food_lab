@@ -7,6 +7,8 @@
 
 /export/*.png
 /export/*.zip
+/export/*.svg
+
 /data/*.txt
 /data/*.csv
 /data/*.zip

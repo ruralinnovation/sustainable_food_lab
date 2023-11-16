@@ -1,4 +1,6 @@
-source(here::here("R/get_current_crop_data.R"))
+library(cori.utils)
+# source(here::here("R/get_current_crop_data.R"))
+include("get_current_crop_data.R")
 
 #' Function for getting IA county data for scenario A
 #'
